@@ -124,19 +124,16 @@ Fields visible on cards:
 
 ## 7) Proposed Architecture (MVP)
 ### Frontend
-- Next.js (App Router) + React
+- **Next.js (App Router) + React** (chosen for fastest MVP)
 - Drag/drop: dnd-kit
 - Realtime: SSE (simple) or WS (if needed)
 
-### Backend
-Two viable MVP approaches:
-
-**A) Next.js server (API routes) + local DB**
-- API endpoints for tasks/jobs/events
+### Backend (MVP)
+- **Next.js Route Handlers** (API in the same app)
 - SSE endpoint for events
 
-**B) Small separate server (Express/Fastify) + frontend**
-- Cleaner separation; easier WS
+### Backend (possible post-MVP evolution)
+- Split into a separate server (Fastify/Express) + dedicated runner if/when we need true long-running workers / heavier orchestration.
 
 ### Data
 - SQLite (via Prisma) for:

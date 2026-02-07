@@ -5,10 +5,10 @@ ClawPilot is a local-first control-plane UI for supervising OpenClaw agents.
 ## High-level
 
 - **UI**: Next.js (React) board + task detail + activity feed.
-- **API**: Next.js Route Handlers (or separate server later).
+- **API**: Next.js Route Handlers (monolith for MVP).
 - **Data**: SQLite via Prisma.
 - **Realtime**: Server-Sent Events (SSE) for job/task event streaming (upgrade to WS if needed).
-- **Runner**: A lightweight job runner that:
+- **Runner**: A lightweight job runner abstraction that:
   - starts OpenClaw work (session spawn / send)
   - captures structured events
   - persists events so refresh doesn’t lose state
