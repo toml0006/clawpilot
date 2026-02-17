@@ -1,0 +1,149 @@
+@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Bungee&family=Cinzel+Decorative:wght@400;700;900&family=Fira+Code:wght@400;500&family=Lexend:wght@300;400;500;600&family=Press+Start+2P&family=Shippori+Mincho:wght@400;500;600;700&family=Sorts+Mill+Goudy:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Zen+Kaku+Gothic+New:wght@300;400;500&display=swap');
+
+@import "tailwindcss";
+
+/* ── Map theme CSS vars to Tailwind tokens ── */
+@theme inline {
+  --color-page: var(--th-bg);
+  --color-surface: var(--th-surface);
+  --color-surface-hover: var(--th-surface-hover);
+  --color-surface-alt: var(--th-surface-alt);
+  --color-overlay: var(--th-overlay);
+  --color-ink: var(--th-text);
+  --color-ink-2: var(--th-text-secondary);
+  --color-ink-3: var(--th-text-muted);
+  --color-ink-inv: var(--th-text-inverse);
+  --color-accent: var(--th-accent);
+  --color-accent-hover: var(--th-accent-hover);
+  --color-accent-text: var(--th-accent-text);
+  --color-edge: var(--th-border);
+  --color-edge-hover: var(--th-border-hover);
+  --color-ring: var(--th-ring);
+  --color-danger: var(--th-danger);
+  --color-danger-bg: var(--th-danger-bg);
+  --color-danger-text: var(--th-danger-text);
+  --color-success: var(--th-success);
+  --color-status-draft: var(--th-status-draft);
+  --color-status-ready: var(--th-status-ready);
+  --color-status-cliff: var(--th-status-cliff);
+  --color-status-waiting: var(--th-status-waiting);
+  --color-status-done: var(--th-status-done);
+  --font-heading: var(--th-font-heading);
+  --font-body: var(--th-font-body);
+  --font-mono: var(--th-font-mono);
+  --radius-themed: var(--th-radius);
+  --radius-themed-lg: var(--th-radius-lg);
+  --shadow-themed: var(--th-shadow);
+  --shadow-themed-lg: var(--th-shadow-lg);
+}
+
+/* ── Base styles ── */
+body {
+  background: var(--th-bg, #f8fafc);
+  color: var(--th-text, #0f172a);
+  font-family: var(--th-font-body, 'Outfit', sans-serif);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* ── Theme-specific decorative backgrounds ── */
+
+/* Memphis: terrazzo dots */
+[data-theme="memphis"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle 3px at 15% 25%, var(--th-accent) 100%, transparent 100%),
+    radial-gradient(circle 2px at 45% 15%, var(--th-status-ready) 100%, transparent 100%),
+    radial-gradient(circle 4px at 75% 35%, var(--th-status-waiting) 100%, transparent 100%),
+    radial-gradient(circle 2px at 25% 65%, var(--th-danger) 100%, transparent 100%),
+    radial-gradient(circle 3px at 85% 55%, var(--th-status-done) 100%, transparent 100%),
+    radial-gradient(circle 2px at 55% 80%, var(--th-accent) 100%, transparent 100%),
+    radial-gradient(circle 3px at 10% 90%, var(--th-status-ready) 100%, transparent 100%),
+    radial-gradient(circle 2px at 90% 85%, var(--th-status-waiting) 100%, transparent 100%),
+    radial-gradient(circle 3px at 50% 30%, var(--th-status-done) 100%, transparent 100%),
+    radial-gradient(circle 2px at 70% 70%, var(--th-accent) 100%, transparent 100%);
+}
+
+/* Geocities dark: starfield */
+[data-theme="geocities"][data-mode="dark"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.5) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.7) 100%, transparent),
+    radial-gradient(1px 1px at 70% 40%, rgba(255,255,255,0.4) 100%, transparent),
+    radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.5) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 80% 80%, rgba(255,255,255,0.6) 100%, transparent),
+    radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.4) 100%, transparent),
+    radial-gradient(1px 1px at 60% 55%, rgba(255,255,255,0.3) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 90% 25%, rgba(255,255,255,0.6) 100%, transparent),
+    radial-gradient(1px 1px at 40% 75%, rgba(255,255,255,0.5) 100%, transparent),
+    radial-gradient(1px 1px at 5% 45%, rgba(255,255,255,0.4) 100%, transparent);
+}
+
+/* Terminal: CRT scanlines */
+[data-theme="terminal"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0,0,0,0.12) 2px,
+    rgba(0,0,0,0.12) 4px
+  );
+}
+
+/* Terminal: CRT vignette */
+[data-theme="terminal"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.35) 100%);
+}
+
+/* Art Deco: subtle grid */
+[data-theme="art-deco"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.03;
+  background:
+    repeating-linear-gradient(0deg, transparent 0px, transparent 60px, var(--th-accent) 60px, var(--th-accent) 61px),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 60px, var(--th-accent) 60px, var(--th-accent) 61px);
+}
+
+/* Wabi-Sabi: paper texture */
+[data-theme="wabi-sabi"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ── Terminal theme: green text glow ── */
+[data-theme="terminal"][data-mode="dark"] {
+  text-shadow: 0 0 4px rgba(0,255,65,0.15);
+}
+
+/* ── Geocities: rainbow HR ── */
+[data-theme="geocities"] hr {
+  border: none;
+  height: 4px;
+  background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+}

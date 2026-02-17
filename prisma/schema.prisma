@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model WorkflowState {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String
+  category  String // backlog | unstarted | started | completed | canceled
+  position  Int
+  color     String   @default("#64748b")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks           Task[]
+  transitionsFrom TaskTransition[] @relation("TransitionFromState")
+  transitionsTo   TaskTransition[] @relation("TransitionToState")
+
+  @@index([category, position])
+}
+
+model Project {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  name       String
+  color      String   @default("#4f46e5")
+  position   Int      @default(0)
+  archivedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tasks Task[]
+
+  @@index([position])
+  @@index([archivedAt])
+}
+
+model Task {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  status          String   @default("draft") // legacy compatibility
+  workflowStateId String?
+  workflowState   WorkflowState? @relation(fields: [workflowStateId], references: [id], onDelete: SetNull)
+  projectId       String?
+  project         Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  category        String?
+  priority        Int      @default(0)
+  archivedAt      DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  canceledAt      DateTime?
+  dueAt           DateTime?
+  source          String   @default("human") // human | agent
+  revision        Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  jobs           Job[]
+  events         Event[]
+  artifacts      Artifact[]
+  transitions    TaskTransition[]
+  comments       TaskComment[]
+  actionRequests AgentActionRequest[]
+
+  @@index([workflowStateId, priority])
+  @@index([projectId, priority])
+  @@index([status, priority])
+  @@index([archivedAt])
+  @@index([completedAt])
+  @@index([canceledAt])
+}
+
+model Job {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  status    String   @default("queued") // queued | running | blocked | succeeded | failed | cancelled
+  startedAt DateTime?
+  endedAt   DateTime?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events    Event[]
+  artifacts Artifact[]
+
+  @@index([taskId, createdAt])
+}
+
+model Event {
+  id      String   @id @default(cuid())
+  jobId   String
+  job     Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  taskId  String
+  task    Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  ts      DateTime @default(now())
+  level   String   @default("info") // info | warn | error
+  type    String   // state_change | log | tool | artifact | question
+  message String
+  data    String?  // JSON stored as text
+
+  @@index([taskId, ts])
+  @@index([jobId, ts])
+}
+
+model Artifact {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  jobId     String?
+  job       Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  kind      String   // url | file | diff | note
+  title     String
+  value     String
+  createdAt DateTime @default(now())
+
+  @@index([taskId, createdAt])
+}
+
+model TaskTransition {
+  id          String   @id @default(cuid())
+  taskId       String
+  task         Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  fromStateId  String?
+  fromState    WorkflowState? @relation("TransitionFromState", fields: [fromStateId], references: [id], onDelete: SetNull)
+  toStateId    String
+  toState      WorkflowState @relation("TransitionToState", fields: [toStateId], references: [id], onDelete: Cascade)
+  reason       String?
+  actorType    String   @default("human") // human | agent | system
+  actorId      String?
+  requestId    String?
+  createdAt    DateTime @default(now())
+
+  @@index([taskId, createdAt])
+}
+
+model TaskComment {
+  id         String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  body        String
+  authorType  String   @default("human") // human | agent | system
+  authorId    String?
+  requestId   String?
+  createdAt   DateTime @default(now())
+
+  @@index([taskId, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorType  String   // human | agent | system
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  before     String?
+  after      String?
+  requestId  String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([createdAt])
+}
+
+model AgentCredential {
+  id          String   @id @default(cuid())
+  name        String
+  tokenHash   String   @unique
+  scopes      String? // JSON array
+  status      String   @default("active") // active | inactive | revoked
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  actionRequests AgentActionRequest[]
+
+  @@index([status])
+}
+
+model AgentPolicyRule {
+  id          String   @id @default(cuid())
+  name        String
+  action      String
+  effect      String   // allow | deny | require_approval
+  constraints String?  // JSON
+  enabled     Boolean  @default(true)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([action, enabled, position])
+}
+
+model AgentActionRequest {
+  id            String   @id @default(cuid())
+  taskId        String?
+  task          Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  credentialId  String?
+  credential    AgentCredential? @relation(fields: [credentialId], references: [id], onDelete: SetNull)
+  action        String
+  payload       String   // JSON
+  status        String   @default("pending") // pending | approved | rejected
+  decisionReason String?
+  resolvedBy    String?
+  resolvedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([status, createdAt])
+  @@index([taskId])
+}
+
+model RetentionPolicy {
+  id                String   @id @default("singleton")
+  archiveAfterDays  Int      @default(30)
+  purgeEventsAfterDays Int   @default(90)
+  retainTasksForever Boolean @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model CleanupRun {
+  id           String   @id @default(cuid())
+  dryRun       Boolean  @default(true)
+  status       String   @default("completed") // running | completed | failed
+  summary      String?
+  archivedTasks Int     @default(0)
+  purgedEvents Int      @default(0)
+  startedAt    DateTime @default(now())
+  finishedAt   DateTime?
+  error        String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model IdempotencyRecord {
+  id             String   @id @default(cuid())
+  scope          String
+  idempotencyKey String
+  requestHash    String
+  statusCode     Int
+  responseBody   String
+  expiresAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([scope, idempotencyKey])
+  @@index([createdAt])
+}
+
+model AppSettings {
+  id                     String   @id @default("singleton")
+  instanceName           String   @default("ClawPilot")
+  defaultProjectId       String?
+  boardDensity           String   @default("default") // "default" | "compact"
+  openclawGatewayUrl     String   @default("")
+  openclawApiTimeout     Int      @default(30000)
+  agentAutoApprove       Boolean  @default(false)
+  agentMaxConcurrentJobs Int      @default(3)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
