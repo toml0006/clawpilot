@@ -1,4 +1,4 @@
-import type { Project, Task, WorkflowState } from "@/generated/prisma/client";
+import type { Label, Project, Task, TaskLabel, WorkflowState } from "@/generated/prisma/client";
 
 export const WORKFLOW_CATEGORIES = [
   "backlog",
@@ -78,7 +78,11 @@ export function normalizeProjectKey(value: string): string {
 }
 
 export function mapTaskResponse(
-  task: Task & { workflowState: WorkflowState | null; project?: Project | null }
+  task: Task & {
+    workflowState: WorkflowState | null;
+    project?: Project | null;
+    labels?: Array<TaskLabel & { label: Label }>;
+  }
 ) {
   return {
     ...task,
@@ -86,6 +90,7 @@ export function mapTaskResponse(
     workflowState: task.workflowState,
     stateCategory: task.workflowState?.category ?? null,
     project: task.project ?? null,
+    labels: task.labels?.map((tl) => tl.label) ?? [],
   };
 }
 

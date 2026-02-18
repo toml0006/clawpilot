@@ -82,7 +82,14 @@ export async function GET(request: NextRequest) {
 
   const tasks = await prisma.task.findMany({
     where,
-    include: { workflowState: true, project: true },
+    include: {
+      workflowState: true,
+      project: true,
+      labels: {
+        include: { label: true },
+        orderBy: { label: { position: "asc" } },
+      },
+    },
     orderBy: [{ workflowState: { position: "asc" } }, { priority: "asc" }, { createdAt: "asc" }],
     take: 300,
   });
@@ -175,7 +182,14 @@ export async function POST(request: NextRequest) {
         completedAt: state.category === "completed" ? new Date() : null,
         canceledAt: state.category === "canceled" ? new Date() : null,
       },
-      include: { workflowState: true, project: true },
+      include: {
+        workflowState: true,
+        project: true,
+        labels: {
+          include: { label: true },
+          orderBy: { label: { position: "asc" } },
+        },
+      },
     });
 
     await tx.taskTransition.create({

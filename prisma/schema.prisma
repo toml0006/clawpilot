@@ -41,6 +41,32 @@ model Project {
   @@index([archivedAt])
 }
 
+model Label {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String
+  color     String   @default("#6b7280")
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks TaskLabel[]
+
+  @@index([position])
+}
+
+model TaskLabel {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  labelId   String
+  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([taskId, labelId])
+  @@index([labelId])
+}
+
 model Task {
   id              String   @id @default(cuid())
   title           String
@@ -68,6 +94,7 @@ model Task {
   transitions    TaskTransition[]
   comments       TaskComment[]
   actionRequests AgentActionRequest[]
+  labels         TaskLabel[]
 
   @@index([workflowStateId, priority])
   @@index([projectId, priority])

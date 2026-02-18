@@ -159,6 +159,10 @@ export async function GET(request: NextRequest) {
     include: {
       workflowState: true,
       project: true,
+      labels: {
+        include: { label: true },
+        orderBy: { label: { position: "asc" } },
+      },
     },
     orderBy,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -310,6 +314,10 @@ export async function POST(request: NextRequest) {
     include: {
       workflowState: true,
       project: true,
+      labels: {
+        include: { label: true },
+        orderBy: { label: { position: "asc" } },
+      },
     },
   });
 
